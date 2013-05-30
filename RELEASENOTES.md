@@ -19,8 +19,84 @@
 #
 -->
 ## Release Notes for Cordova (iOS) ##
- 
- Cordova is a static library that enables developers to include the Cordova API in their iOS application projects easily, and also create new Cordova-based iOS application projects through the command-line.
+
+Update these notes using: git log --pretty=format:'* %s' --topo-order --no-merges origin/2.7.x...HEAD
+
+Cordova is a static library that enables developers to include the Cordova API in their iOS application projects easily, and also create new Cordova-based iOS application projects through the command-line.
+
+### 2.8.0 (201305XX) ###
+
+* [CB-2840] Nil checks to avoid crash when network disconnected
+* [CB-3416] adding empty <plugins> element during deprecation window.
+* [CB-3006] Customize InAppBrowser location bar
+* [CB-3405] InAppBrowser option to hide bottom bar with Done/History buttons
+* [CB-3394] Cordova iOS crashes when multiple access elements in config.xml
+* [CB-3166] Add deprecation notice for use of <plugin> in config.xml in iOS
+* [CB-2905] Exif geolocation meta data tag writing
+* [CB-3307] Rename cordova-ios.js -> cordova.js
+* [CB-1108] Convert <plugin> -> <feature> with <param>
+* [CB-3321] Fix bogus "failed whitelist" log messages
+* [CB-3311] add default textbox for notification prompt
+* [CB-2846] SplashScreen crashes app when image not available
+* [CB-2789] Remove CaptureOptions.mode support.
+* [CB-3295] Send InAppBrowser loadstart events when redirects occur
+* [CB-2896] added ImageIO and OpenAL system frameworks to support new exif functionality in CDVCamera
+* [CB-2896] writing data to object through CGImageDestinationRef, enables multipart exif tag writing
+* [CB-2958] simple fix, moved write to photealbum code and sourced from modified data. Photo data returned by cordova will match photo on cameraroll
+* [CB-3339] add version to command line scripts
+* [CB-3377] Remove cordova/release script
+* [CB-2974] Add a ./cordova/lib/list-devices project-level helper script to iOS
+* [CB-2951] Add a ./cordova/lib/list-emulator-images project-level helper script to iOS
+* [CB-2974] Add a ./cordova/lib/list-devices project-level helper script to iOS
+* [CB-2966] Add a ./cordova/lib/list-started-emulators as project-level helper script to iOS
+* [CB-2990] Add a ./cordova/lib/install-device project-level helper script to iOS
+* [CB-2982] Add a ./cordova/lib/install-emulator project-level helper script to iOS
+* [CB-2998] Add a ./cordova/lib/start-emulator project-level helper script to iOS
+* [CB-2916] Add a ./cordova/clean project-level script for iOS
+* [CB-2053] Update UIImagePickerController label to reflect video media type in CDVCamera
+
+<br />
+
+### 2.7.0 (201304XX) ###
+
+* Fix NPE in InAppBrowser's error callback.
+* [CB-2849] Fix bin/create when CordovaLib parent dir has a space
+* [CB-3069] Fix InAppBrowser load events (for non-redirecting pages)
+* InAppBrowser: Don't inject iframe bridge until necessary.
+* Fix FileTransfer unit test. HTTP Method was being set to null.
+* [CB-2305] Add InAppBrowser injectSriptCode command to support InAppBrowser.executeScript and InAppBrowser.insertCSS APIs
+* [CB-2653] Simplify InAppBrowser.injectScriptCode.
+* [CB-2537] Implement streaming downloads for FileTransfer
+* [CB-2190] Allow FileTransfer uploads to continue in background
+* [CB-1518] Request content length in parallel with download for gzipped content
+* [CB-2653] Delay executeScript/insertCSS callback until resources have loaded; pass JS results to callback
+* [CB-2824] Remove DebugConsole plugin
+* [CB-3066] Fire onNativeReady from JS, as bridge is available immediately
+* [CB-2725] Fix www deploy issues with symlinks
+* [CB-2725] follow links in www copy script
+* [CB-3039] iOS Exif date length mismtach
+* [CB-3052] iOS Exif SubIFD offsets incorrect
+* [CB-51] Added httpMethod for file transfer options (defaults to POST)
+* [CB-2732] Only set camera device when allowed.
+* [CB-2911] Updated resolveLocalFileSystemURI.
+* [CB-3032] Add whitelist support for custom schemes.
+* [CB-3048] Add --arc flag to create script, support arc in template.
+* [CB-3067]: fixing ios5 whitelist of file url
+* [CB-3067] Revert CDVURLProtocol to not whitelist file urls
+* [CB-2788] add ./bin/check_reqs script to iOS
+* [CB-2587] Added plugin timing for plugins that are loaded on startup (plugin 'onload' attribute)
+* [CB-2848] ShowSplashScreenSpinner not used
+* [CB-2960] Changing the volume of a sound already playing
+* [CB-3021] Can no longer import CDVPlugin.h from plugin Objective-C++ code
+* [CB-2790] added splice function to header writer: accepts jpeg as NSData, and splices in exif data specified by a string
+* [CB-2790] removed old splice code, replaced with JpegHeaderWriter api calls
+* [CB-2896] split writing of working tags off here, multipart tags not supported
+* [CB-2896] fixed error in exif subifd offset calculation for tag 8769
+* [CB-2902] re-added long/short tags to template dict, fixed subExifIFD offset
+* [CB-2698] Fix load detection when pages have redirects.
+* [CB-3295] Send InAppBrowser loadstart events when redirects occur
+
+<br />
 
 ### 2.6.0 (20130401) ###
 

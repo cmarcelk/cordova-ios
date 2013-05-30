@@ -126,20 +126,19 @@ static CFIndex WriteDataToStream(NSData* data, CFWriteStreamRef stream)
     // arguments order from js: [filePath, server, fileKey, fileName, mimeType, params, debug, chunkedMode]
     // however, params is a JavaScript object and during marshalling is put into the options dict,
     // thus debug and chunkedMode are the 6th and 7th arguments
-    NSArray* arguments = command.arguments;
-    NSString* target = (NSString*)[arguments objectAtIndex:0];
-    NSString* server = (NSString*)[arguments objectAtIndex:1];
-    NSString* fileKey = [arguments objectAtIndex:2 withDefault:@"file"];
-    NSString* fileName = [arguments objectAtIndex:3 withDefault:@"no-filename"];
-    NSString* mimeType = [arguments objectAtIndex:4 withDefault:nil];
-    NSDictionary* options = [arguments objectAtIndex:5 withDefault:nil];
+    NSString* target = [command argumentAtIndex:0];
+    NSString* server = [command argumentAtIndex:1];
+    NSString* fileKey = [command argumentAtIndex:2 withDefault:@"file"];
+    NSString* fileName = [command argumentAtIndex:3 withDefault:@"no-filename"];
+    NSString* mimeType = [command argumentAtIndex:4 withDefault:nil];
+    NSDictionary* options = [command argumentAtIndex:5 withDefault:nil];
     //    BOOL trustAllHosts = [[arguments objectAtIndex:6 withDefault:[NSNumber numberWithBool:YES]] boolValue]; // allow self-signed certs
-    BOOL chunkedMode = [[arguments objectAtIndex:7 withDefault:[NSNumber numberWithBool:YES]] boolValue];
-    NSDictionary* headers = [arguments objectAtIndex:8 withDefault:nil];
+    BOOL chunkedMode = [[command argumentAtIndex:7 withDefault:[NSNumber numberWithBool:YES]] boolValue];
+    NSDictionary* headers = [command argumentAtIndex:8 withDefault:nil];
     // Allow alternative http method, default to POST. JS side checks
     // for allowed methods, currently PUT or POST (forces POST for
     // unrecognised values)
-    NSString* httpMethod = [arguments objectAtIndex:10 withDefault:@"POST"];
+    NSString* httpMethod = [command argumentAtIndex:10 withDefault:@"POST"];
     CDVPluginResult* result = nil;
     CDVFileTransferError errorCode = 0;
 
@@ -349,13 +348,7 @@ static CFIndex WriteDataToStream(NSData* data, CFWriteStreamRef stream)
     CDVFileTransferDelegate* delegate = [activeTransfers objectForKey:objectId];
 
     if (delegate != nil) {
-        [delegate.connection cancel];
-        [activeTransfers removeObjectForKey:objectId];
-
-        // delete uncomplete file
-        NSFileManager* fileMgr = [NSFileManager defaultManager];
-        [fileMgr removeItemAtPath:delegate.target error:nil];
-
+        [delegate cancelTransfer:delegate.connection];
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:[self createFileTransferError:CONNECTION_ABORTED AndSource:delegate.source AndTarget:delegate.target]];
         [self.commandDelegate sendPluginResult:result callbackId:delegate.callbackId];
     }
@@ -430,8 +423,12 @@ static CFIndex WriteDataToStream(NSData* data, CFWriteStreamRef stream)
     NSMutableDictionary* result = [NSMutableDictionary dictionaryWithCapacity:3];
 
     [result setObject:[NSNumber numberWithInt:code] forKey:@"code"];
-    [result setObject:source forKey:@"source"];
-    [result setObject:target forKey:@"target"];
+    if (source != nil) {
+        [result setObject:source forKey:@"source"];
+    }
+    if (target != nil) {
+        [result setObject:target forKey:@"target"];
+    }
     NSLog(@"FileTransferError %@", result);
 
     return result;
@@ -446,10 +443,16 @@ static CFIndex WriteDataToStream(NSData* data, CFWriteStreamRef stream)
     NSMutableDictionary* result = [NSMutableDictionary dictionaryWithCapacity:5];
 
     [result setObject:[NSNumber numberWithInt:code] forKey:@"code"];
-    [result setObject:source forKey:@"source"];
-    [result setObject:target forKey:@"target"];
+    if (source != nil) {
+        [result setObject:source forKey:@"source"];
+    }
+    if (target != nil) {
+        [result setObject:target forKey:@"target"];
+    }
     [result setObject:[NSNumber numberWithInt:httpStatus] forKey:@"http_status"];
-    [result setObject:body forKey:@"body"];
+    if (body != nil) {
+        [result setObject:body forKey:@"body"];
+    }
     NSLog(@"FileTransferError %@", result);
 
     return result;
@@ -561,13 +564,26 @@ static CFIndex WriteDataToStream(NSData* data, CFWriteStreamRef stream)
     self.command.backgroundTaskID = UIBackgroundTaskInvalid;
 }
 
+- (void)removeTargetFile
+{
+    NSFileManager* fileMgr = [NSFileManager defaultManager];
+
+    [fileMgr removeItemAtPath:self.target error:nil];
+}
+
+- (void)cancelTransfer:(NSURLConnection*)connection
+{
+    [connection cancel];
+    [self.command.activeTransfers removeObjectForKey:self.objectId];
+    [self removeTargetFile];
+}
+
 - (void)cancelTransferWithError:(NSURLConnection*)connection errorMessage:(NSString*)errorMessage
 {
     CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsDictionary:[self.command createFileTransferError:FILE_NOT_FOUND_ERR AndSource:self.source AndTarget:self.target AndHttpStatus:self.responseCode AndBody:errorMessage]];
 
     NSLog(@"File Transfer Error: %@", errorMessage);
-    [connection cancel];
-    [self.command.activeTransfers removeObjectForKey:self.objectId];
+    [self cancelTransfer:connection];
     [self.command.commandDelegate sendPluginResult:result callbackId:callbackId];
 }
 
@@ -632,8 +648,7 @@ static CFIndex WriteDataToStream(NSData* data, CFWriteStreamRef stream)
 
     NSLog(@"File Transfer Error: %@", [error localizedDescription]);
 
-    // remove connection for activeTransfers
-    [command.activeTransfers removeObjectForKey:objectId];
+    [self cancelTransfer:connection];
     [self.command.commandDelegate sendPluginResult:result callbackId:callbackId];
 }
 
